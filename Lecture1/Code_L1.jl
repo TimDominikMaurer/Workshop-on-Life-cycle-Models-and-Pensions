@@ -1,10 +1,10 @@
-using Plots, Parameters, Distributions
+using Plots, Parameters, Distributions, Random
 
 # working directory is the current file
 cd(dirname(@__FILE__))
 
 # Define the Parameter in a mutable construct
-@with_kw mutable struct set_para1
+@with_kw mutable struct set_para
     # Timing parameters
     T::Int = 20                                        # Maximum age of life
     Tᵣ::Int = 15                                       # Retirement age
@@ -21,13 +21,10 @@ cd(dirname(@__FILE__))
 	# Distribution
     μ::Float64 = 0.0                                   # Location of Lognormal
     σ::Float64 = 1.0                                   # Scale of Lognormal
-	
-	# Simulation
-	Nsim::Int = 3                                      # Number of simulated agents
 end
 
 # Create an instance of the struct
-para = set_para1()
+para = set_para()
 
 
 # Access example
@@ -59,7 +56,8 @@ X =  para.w*sum(para.l./((1+para.r).^collect(1:para.T)))
 # Given that we have introduced the concept of evaluating sums using vectorization, 
 # we can write a function that solves for c1 given an instance of a^i_0
 function c1i(para,a0i)
-	# solves for c^i_1 as in equation (8)
+	# This function solves for c^i_1 as in equation (8)
+	# a0i: Savings/Assets at birth
 	@unpack T,l,r,w,β,ρ = para
 	X =  w*sum(l./((1+r).^collect(1:T)))
 	Yi =  a0i
@@ -108,7 +106,9 @@ end
 
 ###########
 # Part D: Write a function that solve for the consumption/savings path over the lifecycle
-function solveLC(para,a0i)
+function solveLCM(para,a0i)
+	# This function solves for the life-cycle model for instance of assets at birth
+	# a0i: Savings/Assets at birth
 	@unpack T,l,r,w,β,ρ = para
 		# we start by vectorizing the Long-run Euler equation in (6)
 	LRE = (β*(1+r)).^((collect(1:T).-1)/ρ)
@@ -136,24 +136,32 @@ plot!(legend=:topleft)
 
 ###########
 # Part D: Write a function that simulated the model
-function Sim(para)
-	# Nsim: Number of simulated agents
-	@unpack μ,σ,T,Nsim = para
-	
-	# Simulated initial wealth levels
-	Random.seed!(1) # set seed
-	a0i_sim = rand(LogNormal(μ, σ), Nsim)
-	# solve and simulate for all draws
-	Csim = zeros((Nsim,T)) # storage
-	Asim = zeros((Nsim,T+1)) # storage
-	for i in 1:Nsim
-		Csim[i,:],Asim[i,:] = solveLC(para,a0i_sim[i])
+function solveLCM(para,a0i)
+	# This function solves for the life-cycle model for instance of assets at birth
+	# a0i: Savings/Assets at birth
+	@unpack T,l,r,w,β,ρ = para
+		# we start by vectorizing the Long-run Euler equation in (6)
+	LRE = (β*(1+r)).^((collect(1:T).-1)/ρ)
+	# Now, we can solve for the vector of the consumption path for an instance of a^i_0:
+	C = c1i(para,a0i).*LRE
+	# Solve for the savings path over the lifecycle
+	A = zeros(T+1) # Initialize savings vector
+	A[1] = a0i  # Savings agent i is born with
+	# Solve the whole savings path using the budget constraint
+	for t in 1:(T)  # Loop from the second period onward
+		A[t+1] = w * l[t] + (1 + r) * A[t] - C[t]
 	end
-	return Csim,Asim
+	return C,A
 end
 
+# Setting a seed is important when you want to 
+# ensure that the results of your random operations 
+# (like random number generation) are reproducible.
+Random.seed!(1) # set seed
+
 # Call function and plot result
-Csim,Asim = Sim(para)
+Nsim = 3
+Csim,Asim = SimLCM(para,Nsim)
 
 # plot the result
 gr();
