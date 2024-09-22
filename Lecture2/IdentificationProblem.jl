@@ -1,3 +1,5 @@
+# Identification Problem
+
 ###### 
 # Lecture 2: Structural Estimation
 
@@ -55,64 +57,80 @@ Ndata,_ = size(ConsumptionData)
 ############# 
 # Part C: Create the data moments
 
-# Ages to be targeted
-ages = [5,10,15]
+# Mean Consumption at age 5
+Λᵈ₁ = mean(ConsumptionData[:,2])
+Λᵈ₂ = mean(ConsumptionData[:,10])
+Λᵈ₃ = mean(ConsumptionData[:,18])
+# stack them into a vector
+Λᵈ=[Λᵈ₁,Λᵈ₂,Λᵈ₃]
 
-# Simulations at age choosen ages
-Λᵈ = mean(SavingData[:,ages],dims=1)
 
-
-mean(SavingData[:,ages],dims=1)
 ############# 
 # Part C: Wrtie a function that simulates the moments
 S = 100
-function sim_moments(S,ages,Ndata)
+function sim_moments(S,Ndata)
 	# This functions simulates the moments on S simulations
     # Ndata: Number of individuals in the data
     
     # Set the seed
     Random.seed!(1)
     # Store moments per simulation in the following vectors
-    Λˢₛ = zeros((S,length(ages)))
+    Λˢ₁ₛ = zeros(S)
+    Λˢ₂ₛ = zeros(S)
+    Λˢ₃ₛ = zeros(S)
     for s in 1:S
-        SimCon, SimSav = SimLCM(para,Ndata)
-        Λˢₛ[s,:] = mean(SimSav[:,ages],dims=1)
+        _, SimCon = SimLCM(para,Ndata)
+        Λˢ₁ₛ[s] = mean(SimCon[:,2])
+        Λˢ₂ₛ[s] = mean(SimCon[:,10])
+        Λˢ₃ₛ[s] = mean(SimCon[:,18])
     end
+    # take the average across the number of simulations S
+    Λˢ₁ = mean(Λˢ₁ₛ)
+    Λˢ₂ = mean(Λˢ₂ₛ)
+    Λˢ₃ = mean(Λˢ₃ₛ)
     # stack them into a vector
-    Λˢ = mean(Λˢₛ,dims=1)
+    Λˢ = [Λˢ₁,Λˢ₂,Λˢ₃]
 	return Λˢ
 end
+
+sim_moments(S,Ndata)
 
 
 
 # write a fucntion for the difference
-function moments_diff(data,ages,S)
+function moments_diff(data,S)
 	# This function solves for the
     
     # Get the number of individuals in the data
     Ndata,_ = size(data)
-    # Data moments
+    
+    # Start with the data moments
+    Λᵈ₁ = mean(data[:,2])
+    Λᵈ₂ = mean(data[:,10])
+    Λᵈ₃ = mean(data[:,18])
     # stack them into a vector
-    Λᵈ= mean(data[:,ages],dims=1)
+    Λᵈ=[Λᵈ₁,Λᵈ₂,Λᵈ₃]
     
     # Simulate moments
-    Λˢ =  sim_moments(S,ages,Ndata)
+    Λˢ = sim_moments(S,Ndata)
     
-	return vec(Λᵈ - Λˢ)
+	return Λᵈ - Λˢ
 end
 
+moments_diff(SavingData,S)
 
-function smm_objective(Θ,data,ages,S,W)
+function smm_objective(Θ,data,S,W)
     
     # set parameter
-    para.ρ = Θ[1]
+    para.β = Θ[1]
+    para.ρ = Θ[2]
     
     # If W is not provided (i.e., is nothing), default to identity matrix
     if W === nothing
-        W = Diagonal(ones(length(ages)))  # Identity matrix in Julia
+        W = Diagonal([1.0, 1.0, 1.0])  # Identity matrix in Julia
     end
     # Compute the difference between data and model moments
-    Mdiff = moments_diff(data,ages,S)
+    Mdiff = moments_diff(data,S)
     
     # Compute the quadratic form
     objective_value = Mdiff' * W * Mdiff
@@ -121,15 +139,18 @@ function smm_objective(Θ,data,ages,S,W)
 end
 
 # Optimize using Nelder-Mead
-result = optimize(x -> smm_objective(x, SavingData,ages,S, nothing), [0.9], NelderMead())
+result = optimize(x -> smm_objective(x, SavingData,S, nothing), [0.9,2.1], NelderMead())
 
 # Print the result
 println("Estimated parameters: ", Optim.minimizer(result))
 println("Optimization details: ", result)
-moments_diff(SavingData,ages,S)'*Diagonal([1.0, 1.0, 1.0])*moments_diff(SavingData,ages,S)
+moments_diff(SavingData,S)'*Diagonal([1.0, 1.0, 1.0])*moments_diff(SavingData,S)
 
 
-para.ρ = Optim.minimizer(result)[1]
+
+
+para.β = Optim.minimizer(result)[1]
+para.ρ = Optim.minimizer(result)[2]
 Con1, A1 = solveLCM(para,0.0)
 
 # The true parameters are
@@ -142,53 +163,7 @@ plot!(Con2)
 plot(A1)
 plot!(A2)
 
-ages = [1,5,10,15,21]
 
 
-# Optimize using Nelder-Mead
-result = optimize(x -> smm_objective(x, SavingData,ages,S, nothing), [0.9], NelderMead())
-
-# Print the result
-println("Estimated parameters: ", Optim.minimizer(result))
-println("Optimization details: ", result)
-moments_diff(SavingData,ages,S)'*Diagonal(ones(length(ages)))*moments_diff(SavingData,ages,S)
-
-
-para.ρ = Optim.minimizer(result)[1]
-Con1, A1 = solveLCM(para,0.0)
-
-# The true parameters are
-para.β = 0.98
-para.ρ = 2.0
-Con2, A2 = solveLCM(para,0)
-
-plot(Con1)
-plot!(Con2)
-plot(A1)
-plot!(A2)
-
-ages = [1,5,8,10,12,15,21]
-
-
-# Optimize using Nelder-Mead
-result = optimize(x -> smm_objective(x, SavingData,ages,S, nothing), [0.9], NelderMead(),tol=0.0000001)
-
-optimize()
-# Print the result
-println("Estimated parameters: ", Optim.minimizer(result))
-println("Optimization details: ", result)
-moments_diff(SavingData,ages,S)'*Diagonal(ones(length(ages)))*moments_diff(SavingData,ages,S)
-
-
-para.ρ = Optim.minimizer(result)[1]
-Con1, A1 = solveLCM(para,0.0)
-
-# The true parameters are
-para.β = 0.98
-para.ρ = 2.0
-Con2, A2 = solveLCM(para,0)
-
-plot(Con1)
-plot!(Con2)
-plot(A1)
-plot!(A2)
+smm_objective(Optim.minimizer(result),SavingData,S,nothing)
+moments_diff(SavingData,S)

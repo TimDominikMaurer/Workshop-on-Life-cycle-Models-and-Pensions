@@ -41,7 +41,7 @@ function SimLCM(para,Nsim)
 	Csim = zeros((Nsim,T)) # storage
 	Asim = zeros((Nsim,T+1)) # storage
 	for i in 1:Nsim
-		Csim[i,:],Asim[i,:] = solveLC(para,a0i_sim[i])
+		Csim[i,:],Asim[i,:] = solveLCM(para,a0i_sim[i])
 	end
 	return Csim,Asim
 end
