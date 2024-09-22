@@ -1,6 +1,9 @@
 # OLG plot
 using Plots
 
+# working directory is the current file
+cd(dirname(@__FILE__))
+
 # Parameters
 J = 10  # Number of periods an agent lives
 generations = J  # Number of generations
@@ -29,4 +32,6 @@ for g in 1:generations
 end
 
 # Create the plot, with y-axis flipped and y values reflecting birth times
-scatter(x, y, marker=:rect, ms=10, xlabel="Time t", ylabel="Birth Time", legend=false, aspect_ratio=:equal, yflip=true, color=colors, xlim=(-J, J), xticks=-J:1:J, yticks=-J+1:0)
+gr()
+scatter(x, y, marker=:rect, ms=10, xlabel="Time t", ylabel="Birth time of OLG", legend=false, aspect_ratio=:equal, yflip=true, color=colors, xlim=(-J, J), xticks=-J:1:J, yticks=-J+1:0)
+savefig("OLGplot")
