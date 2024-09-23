@@ -8,7 +8,7 @@ cd(dirname(@__FILE__))
     # Timing parameters
     T::Int = 20                                        # Maximum age of life
     Tᵣ::Int = 15                                       # Retirement age
-	l::Vector{Float16} = vcat(ones(Tᵣ), zeros(T-Tᵣ))     # Retirement age
+	l::Vector{Float16} = vcat(ones(Tᵣ), zeros(T-Tᵣ))     # Exogenous labour supply
 
     # Prices
     r::Float64 = 0.04                                  # Gross interest rate after taxes
