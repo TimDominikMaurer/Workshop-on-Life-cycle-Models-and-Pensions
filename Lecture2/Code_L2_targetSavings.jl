@@ -14,11 +14,11 @@ cd(dirname(@__FILE__))
 	l::Vector{Float16} = vcat(ones(Tᵣ), zeros(T-Tᵣ))     # Retirement age
 
     # Prices
-    r::Float64 = 0.13                                  # Gross interest rate after taxes
+    r::Float64 = 0.04                                  # Gross interest rate after taxes
     w::Float64 = 1.0                                   # Wage
 
     # Preferences
-    β::Float64 = 0.96                                  # Patience
+    β::Float64 = 0.98                                  # Patience
     ρ::Float64 = 2.0                                   # Relative Risk Aversion (RRA) / Inverse IES
 	
 	# Distribution
@@ -43,7 +43,7 @@ include("Functions_Lecture1.jl")
 # 3. We therefore know exactly what our estimation should lead to.
 
 # The true parameters are
-para.β = 0.96
+para.β = 0.98
 para.ρ = 2.0
 # We simulate the model with the "true" parameters.
 ConsumptionData,SavingData = SimLCM(para,10000)
@@ -56,34 +56,10 @@ Ndata,_ = size(ConsumptionData)
 # Part C: Create the data moments
 
 # Ages to be targeted
-ages = [3,8,10,12,17]
-N_mom = length(ages) 
+ages = [5,10,15]
 
-# Create moments of the data
+# Simulations at age choosen ages
 Λᵈ = mean(SavingData[:,ages],dims=1)
-N_mom = length(Λᵈ) # number of moments
-
-# Bootstrap the data with replacement
-B = 1000 # Number of bootstrap replications
-# To store bootstrap results
-bootstrap_moments = zeros(B,N_mom)
-
-rand(1:Ndata,Ndata)
-# Perform bootstrapping
-for b in 1:B
-    # Sample with replacement for each age group
-    for (i,age) in enumerate(ages)
-    sample = SavingData[rand(1:Ndata, Ndata),age]
-    
-    # Calculate mean consumption for each age in the bootstrap sample
-    bootstrap_moments[b, i] = mean(sample)
-    end
-end
-
-cov_moments = cov(bootstrap_moments)
-var_moments = diag(cov_moments)
-W_d = diagm(var_moments.^-1)
-
 
 
 mean(SavingData[:,ages],dims=1)
@@ -122,16 +98,15 @@ function moments_diff(data,ages,S)
     # Simulate moments
     Λˢ =  sim_moments(S,ages,Ndata)
     
-	return vec(Λᵈ - Λˢ)./vec(Λᵈ)
+	return vec(Λᵈ - Λˢ)
 end
 
 
 function smm_objective(Θ,data,ages,S,W)
     
     # set parameter
-    para.β = Θ[1]
-    # para.ρ = Θ[2]
-        
+    para.ρ = Θ[1]
+    
     # If W is not provided (i.e., is nothing), default to identity matrix
     if W === nothing
         W = Diagonal(ones(length(ages)))  # Identity matrix in Julia
@@ -146,19 +121,11 @@ function smm_objective(Θ,data,ages,S,W)
 end
 
 # Optimize using Nelder-Mead
-result = optimize(x -> smm_objective(x, SavingData,ages,S, W_d), [0.95], NelderMead())
+result = optimize(x -> smm_objective(x, SavingData,ages,S, nothing), [0.9], NelderMead())
 
 # Print the result
 println("Estimated parameters: ", Optim.minimizer(result))
 println("Optimization details: ", result)
-
-
-smm_objective([0.95,2.5],SavingData,ages,S,W_d)
-para.β
-
-
-moments_diff(SavingData,ages,S)
-
 moments_diff(SavingData,ages,S)'*Diagonal([1.0, 1.0, 1.0])*moments_diff(SavingData,ages,S)
 
 

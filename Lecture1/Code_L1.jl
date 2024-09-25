@@ -11,11 +11,11 @@ cd(dirname(@__FILE__))
 	l::Vector{Float16} = vcat(ones(Tᵣ), zeros(T-Tᵣ))     # Exogenous labour supply
 
     # Prices
-    r::Float64 = 0.04                                  # Gross interest rate after taxes
+    r::Float64 = 0.13                                  # Gross interest rate after taxes
     w::Float64 = 1.0                                   # Wage
 
     # Preferences
-    β::Float64 = 0.98                                  # Patience
+    β::Float64 = 0.96                                  # Patience
     ρ::Float64 = 2.0                                   # Relative Risk Aversion (RRA) / Inverse IES
 	
 	# Distribution
@@ -33,12 +33,8 @@ println("Labour supply: ", para.l)
 
 # Change calibration
 para.β = 0.9
-para.β
 # and back
-para.β = 0.95
-
-para.r =0.11947891466173288
-para.w = 0.8842349350880873
+para.β = 0.96
 
 ###########
 # Part A: Solve for c1 given a_0
@@ -77,8 +73,6 @@ c1i(para,a0i)
 
 # we start by vectorizing the Long-run Euler equation in (6)
 LRE = (para.β*(1+para.r)).^((collect(1:para.T).-1)/para.ρ)
-
-
 
 # Now, we can solve for the vector of the consumption path for an instance of a^i_0:
 C = c1i(para,a0i).*LRE
@@ -125,7 +119,7 @@ function solveLCM(para,a0i)
 end
 
 # Call the function
-C,A = solveLC(para,a0i)
+C,A = solveLCM(para,a0i)
 
 # plot the result
 plot(0:para.T,[NaN;C],label="Consumption")
@@ -136,22 +130,18 @@ plot!(legend=:topleft)
 
 ###########
 # Part D: Write a function that simulated the model
-function solveLCM(para,a0i)
-	# This function solves for the life-cycle model for instance of assets at birth
-	# a0i: Savings/Assets at birth
-	@unpack T,l,r,w,β,ρ = para
-		# we start by vectorizing the Long-run Euler equation in (6)
-	LRE = (β*(1+r)).^((collect(1:T).-1)/ρ)
-	# Now, we can solve for the vector of the consumption path for an instance of a^i_0:
-	C = c1i(para,a0i).*LRE
-	# Solve for the savings path over the lifecycle
-	A = zeros(T+1) # Initialize savings vector
-	A[1] = a0i  # Savings agent i is born with
-	# Solve the whole savings path using the budget constraint
-	for t in 1:(T)  # Loop from the second period onward
-		A[t+1] = w * l[t] + (1 + r) * A[t] - C[t]
+function SimLCM(para,Nsim)
+	# This function solves the life-cycle model and simulates Nsim agents/households
+	@unpack μ,σ,T = para
+	# Simulated initial wealth levels
+	a0i_sim = rand(LogNormal(μ, σ), Nsim)
+	# solve and simulate for all draws
+	Csim = zeros((Nsim,T)) # storage
+	Asim = zeros((Nsim,T+1)) # storage
+	for i in 1:Nsim
+		Csim[i,:],Asim[i,:] = solveLCM(para,a0i_sim[i])
 	end
-	return C,A
+	return Csim,Asim
 end
 
 # Setting a seed is important when you want to 
@@ -165,7 +155,7 @@ Csim,Asim = SimLCM(para,Nsim)
 
 # plot the result
 gr();
-plot(0:para.T,hcat(fill(NaN, para.Nsim), Csim)',color=[:red :blue :green],label=nothing)
+plot(0:para.T,hcat(fill(NaN, Nsim), Csim)',color=[:red :blue :green],label=nothing)
 plot!(0:para.T,Asim',color=[:red :blue :green],line=:dash,label=nothing)
 plot!(xlabel="Age", ylabel="Consumption / Saving")
 plot!(legend=:topleft)
