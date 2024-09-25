@@ -1,13 +1,29 @@
 ####
 # Lecture 3: The OLG Model
 
+##########
+# Preamble
+
+# start by installing and loading required packages
+using Pkg
+# List of required packages
+packages = ["Plots", "Parameters", "Optim"]
+# Loop through and only add packages that are not installed
+for pkg in packages
+    if !haskey(Pkg.installed(), pkg)
+        Pkg.add(pkg)
+    end
+end
 
 using Plots, Parameters, Optim
 
 # working directory is the current file
 cd(dirname(@__FILE__))
 
-# Define the Parameter in a mutable construct
+##########
+# Implementing the OLG model
+
+# Calibrate the parameter and store them in a mutable construct
 @with_kw mutable struct set_para
     # Timing parameters
     T::Int = 20                                        # Maximum age of life
@@ -77,7 +93,6 @@ end
 
 ###########
 # Part C: Solve for the steady state
-
 
 # Discipline capital guess
 r_lb = 0.01 - para.δ  # lower bound interest rate

@@ -1,12 +1,32 @@
 ###### 
-# Lecture 2: Structural Estimation
+# Lecture 2: Structural Estimation using SMM
 
+
+##########
+# Preamble
+
+# start by installing and loading required packages
+using Pkg
+# List of required packages
+packages = ["Plots", "Parameters", "Distributions", "LinearAlgebra", "Optim"]
+# Loop through and only add packages that are not installed
+for pkg in packages
+    if !haskey(Pkg.installed(), pkg)
+        Pkg.add(pkg)
+    end
+end
+
+# load packages
 using Plots, Parameters, Distributions,LinearAlgebra, Optim
 
-# working directory is the current file
+# set working directory is the current file
 cd(dirname(@__FILE__))
 
-# Define the Parameter in a mutable construct
+
+##########
+# Implementing SSM
+
+# Calibrate the parameter and store them in a mutable construct
 @with_kw mutable struct set_para
     # Timing parameters
     T::Int = 20                                        # Maximum age of life
