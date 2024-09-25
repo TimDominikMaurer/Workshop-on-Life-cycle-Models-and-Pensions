@@ -38,7 +38,6 @@ cd(dirname(@__FILE__))
 	# Prodcution technology
 	α::Float64 = 1/3                                   # Output elasticities of capital
     δ::Float64 = 0.07                                   # yearly depreciation rate
-	
 end
 
 # Create an instance of the struct
