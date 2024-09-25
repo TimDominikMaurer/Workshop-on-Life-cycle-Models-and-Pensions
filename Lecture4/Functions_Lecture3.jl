@@ -1,4 +1,5 @@
 # Functions from lecture 3
+using Plots, Parameters, Optim
 
 function solve_paygo(K_guess,τ,para)
 	# This function solves consumption, savings and aggregate capital given a guess of capital

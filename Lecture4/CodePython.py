@@ -151,6 +151,8 @@ for tp in range(T_shock):
         A[tp,:] = A_pre
         C[tp,:] = C_pre
         
+A     
+        
 # Iterating over guesses of the capital transition path until convergence of the entire path
 stepsize = 100000000 # Initially a large number that should converge to zero 
 tol = 0.000001
