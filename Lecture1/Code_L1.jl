@@ -1,3 +1,5 @@
+using Pkg
+Pkg.add(["Plots", "Parameters", "Distributions", "Random"])
 using Plots, Parameters, Distributions, Random
 
 # working directory is the current file
@@ -52,7 +54,9 @@ X =  para.w*sum(para.l./((1+para.r).^collect(1:para.T)))
 # Given that we have introduced the concept of evaluating sums using vectorization, 
 # we can write a function that solves for c1 given an instance of a^i_0
 function c1i(para,a0i)
-	# This function solves for c^i_1 as in equation (8)
+	# Goal: This function solves for c^i_1 as in equation (8)
+	# Inputs:
+	# para: parameters
 	# a0i: Savings/Assets at birth
 	@unpack T,l,r,w,β,ρ = para
 	X =  w*sum(l./((1+r).^collect(1:T)))
@@ -101,7 +105,9 @@ end
 ###########
 # Part D: Write a function that solve for the consumption/savings path over the lifecycle
 function solveLCM(para,a0i)
-	# This function solves for the life-cycle model for instance of assets at birth
+	# Goal: This function solves for the life-cycle model for an instance of assets at birth
+	# Inputs:
+	# para: parameters
 	# a0i: Savings/Assets at birth
 	@unpack T,l,r,w,β,ρ = para
 		# we start by vectorizing the Long-run Euler equation in (6)
@@ -131,7 +137,10 @@ plot!(legend=:topleft)
 ###########
 # Part D: Write a function that simulated the model
 function SimLCM(para,Nsim)
-	# This function solves the life-cycle model and simulates Nsim agents/households
+	# Goal: This function solves the life-cycle model and simulates Nsim agents/households
+	# Inputs:
+	# para: parameters
+	# a0i: Savings/Assets at birth
 	@unpack μ,σ,T = para
 	# Simulated initial wealth levels
 	a0i_sim = rand(LogNormal(μ, σ), Nsim)
