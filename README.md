@@ -9,9 +9,10 @@ Short Description
 * Lecture 2: Structural Estimation
   * We estimate a partial-equilibrium life-cycle model using Simulated Methods of Moments (SMM)
 * Lecture 3: The overlapping generations (OLG) Model
-  * We solve a general-equilibrium life-cycle model with OLG
-* Lecture 4: Pension Policy and Transition Path
-  * We use the OLG model to study the effects of pension policy in steady state and during the transition
+  * We solve a general-equilibrium life-cycle model with OLG in steady-state
+  * We extend the model with pay-as-you-go (PAYG) pensions and study its effects
+* Lecture 4: The Transition Path
+  * We use the OLG model to study the effects of pension policy during the transition
 
 COURSE PREREQUISITES
 ---------------------
