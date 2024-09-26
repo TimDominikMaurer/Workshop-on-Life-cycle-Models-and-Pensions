@@ -70,10 +70,16 @@ X = para.w * sum(para.l ./ ((1 + para.r) .^ collect(1:para.T)))
 
 # Define a function to solve for initial consumption (c₁) given initial assets (a₀)
 function c1i(para, a0i)
-    # Goal: Solve for c₁ as in equation (8)
-    # Inputs:
-    # para: parameter struct
-    # a0i: initial assets/savings
+    """
+    Solves for initial consumption (c₁) given initial assets (a₀).
+    
+    Inputs:
+    - para: Struct with model parameters (T, l, r, w, β, ρ).
+    - a0i: Initial assets (savings) of agent i.
+    
+    Output:
+    - ci1: Initial consumption level (c₁) for agent i.
+    """
     @unpack T, l, r, w, β, ρ = para
     X = w * sum(l ./ ((1 + r) .^ collect(1:T)))
     Yi = a0i
@@ -125,20 +131,24 @@ end
 # Part D: Write a function to solve for both consumption and savings paths
 
 function solveLCM(para, a0i)
-    # Goal: Solve for the life-cycle model's consumption and savings paths
-    # Inputs:
-    # para: parameter struct
-    # a0i: initial assets/savings
+    """
+    Solves the life-cycle model for an agent, returning consumption and savings paths.
+    
+    Inputs:
+    - para: Struct with model parameters (T, l, r, w, β, ρ).
+    - a0i: Initial assets (savings) of agent i.
+    
+    Outputs:
+    - C: Vector of consumption levels over the life-cycle.
+    - A: Vector of savings levels over the life-cycle.
+    """
     @unpack T, l, r, w, β, ρ = para
-    # Vectorize the long-run Euler equation (10)
     LRE = (β * (1 + r)) .^ ((collect(1:T) .- 1) / ρ)
-    # Solve for the consumption path
     C = c1i(para, a0i) .* LRE
-    # Initialize and compute the savings path
     A = zeros(T + 1)
-    A[1] = a0i  # Initial assets at birth
+    A[1] = a0i
     for t in 1:T
-        A[t+1] = w * l[t] + (1 + r) * A[t] - C[t]
+        A[t + 1] = w * l[t] + (1 + r) * A[t] - C[t]
     end
     return C, A
 end
@@ -156,17 +166,21 @@ plot!(legend=:topleft)
 # Part D: Simulate the model for multiple agents
 
 function SimLCM(para, Nsim)
-    # Goal: Simulate the life-cycle model for Nsim agents
-    # Inputs:
-    # para: parameter struct
-    # Nsim: number of simulated agents
+    """
+    Simulates the life-cycle model for multiple agents.
+    
+    Inputs:
+    - para: Struct with model parameters, including (μ, σ, T).
+    - Nsim: Number of agents (simulations).
+    
+    Outputs:
+    - Csim: Matrix of consumption paths for Nsim agents.
+    - Asim: Matrix of savings paths for Nsim agents.
+    """
     @unpack μ, σ, T = para
-    # Generate initial asset levels using a LogNormal distribution
     a0i_sim = rand(LogNormal(μ, σ), Nsim)
-    # Initialize storage for consumption and savings paths
-    Csim = zeros(Nsim, T)
-    Asim = zeros(Nsim, T + 1)
-    # Solve the model for each agent
+    Csim = zeros((Nsim, T))
+    Asim = zeros((Nsim, T + 1))
     for i in 1:Nsim
         Csim[i, :], Asim[i, :] = solveLCM(para, a0i_sim[i])
     end
