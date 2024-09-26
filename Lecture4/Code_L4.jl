@@ -104,5 +104,3 @@ for tp in 1:T_shock
     A[tp, :] = A_pre
     C[tp, :] = C_pre
 end
-
-A
