@@ -97,10 +97,10 @@ c1i(para, a0i)
 ###########
 # Part B: Solve for the entire consumption path over the life cycle
 
-# Vectorize the long-run Euler equation from (10)
+# Vectorize the long-run Euler equation from equaiton (10)
 LRE = (para.β * (1 + para.r)) .^ ((collect(1:para.T) .- 1) / para.ρ)
 
-# Solve for the consumption path given an initial asset level
+# Solve for the consumption path given an initial asset level as in equaiton (10)
 C = c1i(para, a0i) .* LRE
 
 # Alternative method: solve the consumption path using a loop and the short-run Euler equation (5)
@@ -126,6 +126,13 @@ A[1] = a0i  # Initial assets at birth
 for t in 1:para.T
     A[t+1] = para.w * para.l[t] + (1 + para.r) * A[t] - C[t]
 end
+
+# Plot the results: consumption and savings over the life cycle
+plot(0:para.T, [NaN; C], label="Consumption")
+plot!(0:para.T, A, label="Savings")
+plot!(xlabel="Age", ylabel="Consumption / Savings")
+plot!(legend=:topleft)
+
 
 ###########
 # Part D: Write a function to solve for both consumption and savings paths
