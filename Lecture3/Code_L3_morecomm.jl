@@ -288,5 +288,3 @@ plot!(
     titlefont = 9
 )
 savefig("figtabs/SS_result_comp")
-
-
