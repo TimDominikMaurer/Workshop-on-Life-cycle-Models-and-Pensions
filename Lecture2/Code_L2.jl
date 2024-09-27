@@ -163,15 +163,15 @@ function smm_objective(Θ, data, ages, S, W, para)
     end
 
     # Compute the error vector between data and model moments
-    Mdiff = moments_diff(data, ages, S, para)
+    e = moments_diff(data, ages, S, para)
 
     # Return the quadratic form of the error vector
-    return Mdiff' * W * Mdiff
+    return e' * W * e
 end
 
 ############# 
 # Optimization using Nelder-Mead
-result = optimize(x -> smm_objective(x, ConsumptionData, ages, S, nothing, para), [0.90], NelderMead())
+result = optimize(beta -> smm_objective(beta, ConsumptionData, ages, S, nothing, para), [0.90], NelderMead())
 β_hat = Optim.minimizer(result)[1]  # Retrieve the estimated parameter (β)
 
 # Output results
@@ -215,7 +215,7 @@ end
 Ω_hat = cov(bootstrap_moments)
 
 # Approximate the Jacobian matrix numerically
-h = 0.001
+h = 0.0001
 para.β = β_hat - h
 M_h_minus = sim_moments(S, ages, Ndata, para)
 para.β = β_hat + h

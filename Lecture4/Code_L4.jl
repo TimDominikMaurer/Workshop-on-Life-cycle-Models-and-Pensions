@@ -32,7 +32,7 @@ cd(dirname(@__FILE__))
 	L::Float64 = sum(l)                                  # Aggreage labour supply
 
     # Preferences
-    β::Float64 = 0.95                                  # Patience
+    β::Float64 = 0.96                                  # Patience
     ρ::Float64 = 2.0                                   # Relative Risk Aversion (RRA) / Inverse IES
 	
 	# Prodcution technology
@@ -103,7 +103,7 @@ for tp in 1:T_shock
 end
 
 # Iterating over guesses of the capital transition path until convergence of the entire path
-stepsize = 1e8  # Initially a large number that should converge to zero
+stepsize = 10000  # Initially a large number that should converge to zero
 tol = 1e-6      # Tolerance level for convergence
 counter = 0     # Counter for iterations
 
@@ -167,4 +167,5 @@ title!("Capital Transition Path")
 xlabel!("Periods")
 ylabel!("Capital Level")
 savefig("figtabs/capital_transition_path.png")
+
 

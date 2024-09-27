@@ -9,7 +9,7 @@ using Pkg
 # List of required packages
 packages = ["Plots", "Parameters", "Distributions", "Random"]
 # Loop through the packages and install those that are not already installed
-for pkg in packages
+for pkg in packagesd
     if !haskey(Pkg.installed(), pkg)
         Pkg.add(pkg)
     end
@@ -97,18 +97,19 @@ c1i(para, a0i)
 ###########
 # Part B: Solve for the entire consumption path over the life cycle
 
-# Vectorize the long-run Euler equation from equaiton (10)
+# Vectorize the long-run Euler equation from equation (10)
 LRE = (para.β * (1 + para.r)) .^ ((collect(1:para.T) .- 1) / para.ρ)
 
 # Solve for the consumption path given an initial asset level as in equaiton (10)
 C = c1i(para, a0i) .* LRE
 
+plot(C)
 # Alternative method: solve the consumption path using a loop and the short-run Euler equation (5)
 Cloop = zeros(para.T)  # Initialize consumption vector
 Cloop[1] = c1i(para, a0i)  # Set initial consumption
 # Loop through periods to compute future consumption
-for i in 1:para.T-1
-    Cloop[i+1] = (para.β * (1 + para.r)) ^ (1 / para.ρ) * Cloop[i]
+for j in 1:para.T-1
+    Cloop[j+1] = (para.β * (1 + para.r)) ^ (1 / para.ρ) * Cloop[j]
 end
 
 # Check if both methods give the same result (small numerical difference is allowed)
@@ -123,8 +124,8 @@ A = zeros(para.T + 1)
 A[1] = a0i  # Initial assets at birth
 
 # Compute the savings path using the budget constraint
-for t in 1:para.T
-    A[t+1] = para.w * para.l[t] + (1 + para.r) * A[t] - C[t]
+for j in 1:para.T
+    A[j+1] = para.w * para.l[j] + (1 + para.r) * A[j] - C[j]
 end
 
 # Plot the results: consumption and savings over the life cycle
@@ -171,7 +172,6 @@ plot!(legend=:topleft)
 
 ###########
 # Part D: Simulate the model for multiple agents
-
 function SimLCM(para, Nsim)
     """
     Simulates the life-cycle model for multiple agents.

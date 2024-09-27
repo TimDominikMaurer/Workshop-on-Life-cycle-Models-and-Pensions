@@ -87,8 +87,8 @@ function savings_function(rvec, wvec, bvec, τ, para)
     A[1] = (1 - τ) * wvec[1] * l[1] - C[1]
 
     # Solve the whole savings path using the budget constraint
-    for t in 2:T
-        A[t] = (1 - τ) * wvec[t] * l[t] + (1 - l[t]) * bvec[t] + (1 + rvec[t]) * A[t-1] - C[t]
+    for j in 2:T
+        A[j] = (1 - τ) * wvec[j] * l[j] + (1 - l[j]) * bvec[j] + (1 + rvec[j]) * A[j-1] - C[j]
     end
 
     return A, C

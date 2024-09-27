@@ -30,7 +30,7 @@ cd(dirname(@__FILE__))
 	L::Float64 = sum(l)   # Aggregate labor supply
 
     # Preferences
-    β::Float64 = 0.95     # Discount factor (patience)
+    β::Float64 = 0.96      # Discount factor (patience)
     ρ::Float64 = 2.0      # Relative risk aversion (inverse of intertemporal elasticity of substitution)
 	
 	# Production technology
@@ -71,8 +71,8 @@ function solve(K_guess, para)
 
 	# Step 5: Solve for the savings path using the budget constraint
     A = zeros(T+1)  # Initialize savings (agents are born with zero savings)
-	for t in 1:T    # Loop through periods
-		A[t+1] = w * l[t] + (1 + r) * A[t] - C[t]  # Budget constraint for savings
+	for j in 1:T    # Loop through periods
+		A[j+1] = w * l[j] + (1 + r) * A[j] - C[j]  # Budget constraint for savings
 	end
 	
 	# Step 6: Calculate implied aggregate capital by summing savings
@@ -182,8 +182,8 @@ function solve_paygo(K_guess, τ, para)
 
 	# Step 5: Solve for the savings path using the budget constraint
 	A = zeros(T+1)  # Initialize savings
-	for t in 1:T
-		A[t+1] = (1 - τ) * w * l[t] + (1 - l[t]) * b + (1 + r) * A[t] - C[t]  # Budget constraint for savings
+	for j in 1:T
+		A[j+1] = (1 - τ) * w * l[j] + (1 - l[j]) * b + (1 + r) * A[j] - C[j]  # Budget constraint for savings
 	end
 	
 	# Step 6: Calculate implied aggregate capital
@@ -219,6 +219,9 @@ function objective_paygo(K_guess, τ, para)
     loss = (K_guess - K_implied)^2
     return loss
 end
+
+
+
 
 # Set the pension contribution rate
 τ = 0.1
@@ -288,5 +291,34 @@ plot!(
     titlefont = 9
 )
 savefig("figtabs/SS_result_comp")
+
+
+###################
+# Dynamic inefficiency
+
+# Recalibrate
+para.β = 1.1 # we increase the desire to save
+para.α = 1/6 # the interest rate drops faster as captial/savings increase
+
+# Minimize the objective function without pensions
+K_ss_in = optimize(K -> objective_paygo(K, 0.0, para), 0.0, K_ub).minimizer
+
+# Calculate the steady-state interest rate without pensions
+r_ss_in = para.α * (K_ss_in / para.L)^(para.α - 1) - para.δ
+
+# Solve for steady-state consumption and savings without the PAYG system
+C_ss_in, A_ss_in, K_ss_in = solve_paygo(K_ss_in, 0.0, para)
+
+# Minimize the objective function with pensions
+K_ss_in_paygo = optimize(K -> objective_paygo(K, τ, para), 0.1, K_ub).minimizer
+
+# Calculate the steady-state interest rate with pensions
+r_ss_in_paygo = para.α * (K_ss_in_paygo / para.L)^(para.α - 1) - para.δ
+
+# Solve for steady-state consumption and savings with the PAYG system
+C_ss_in_paygo, A_ss_in_paygo, K_ss_in_paygo = solve_paygo(K_ss_in_paygo, 0.0, para)
+
+# Can PAYG pension improve welfare now?
+welfare(C_ss_in_paygo, para)>welfare(C_ss_in, para)
 
 
