@@ -82,6 +82,7 @@ K_ss1 = optimize(K -> objective_paygo(K,τ1,para), 0.0,K_ub).minimizer
 # Interpolating guess for K
 Kvec = vcat(fill(K_ss0, T_shock), range(K_ss0, stop=K_ss1, length=T_conv), fill(K_ss1, T_perfect))
 
+
 ##########
 # Step 2: Compute associated factor prices and pension benefits
 rvec = α .* (Kvec / L) .^ (α - 1) .- δ
@@ -107,11 +108,13 @@ stepsize = 10000  # Initially a large number that should converge to zero
 tol = 1e-6      # Tolerance level for convergence
 counter = 0     # Counter for iterations
 
+storeconv = zeros(28,TP)
+
 # Perform updates until the capital transition path converges
 while stepsize > tol
     counter += 1  # Increment iteration counter
     ktemp = copy(Kvec)  # Save current guess of the transition path
-
+    storeconv[counter,:] .= ktemp
     ##########
     # Step 3:
     # Adjusting consumption-saving paths for people aged 1 to T at the time of the shock (reacting to changes in prices and policy)

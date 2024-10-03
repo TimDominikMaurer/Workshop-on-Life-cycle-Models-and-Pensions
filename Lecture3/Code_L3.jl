@@ -103,10 +103,10 @@ function objective(K_guess, para)
 	end
 	
 	# Step 8: Compute loss as the squared difference between K_guess and K_implied
-    loss = (K_guess - K_implied)^2
+    loss = abs(K_guess - K_implied)
     return loss
 end
-
+K_guess = K_implied
 ###########
 # Part C: Solve for the steady state
 
@@ -216,7 +216,7 @@ function objective_paygo(K_guess, τ, para)
 	end
 	
 	# Step 8: Compute loss as the squared difference between K_guess and K_implied
-    loss = (K_guess - K_implied)^2
+    loss = abs(K_guess - K_implied)
     return loss
 end
 
@@ -275,7 +275,7 @@ end
 # Calculate welfare for the steady-state
 wel_ss = welfare(C_ss, para)
 wel_ss_paygo = welfare(C_ss_paygo, para)
-
+wel_ss>wel_ss_paygo
 # Plot the steady-state results with and without a PAYG system
 gr()
 plot(0:para.T, [NaN; C_ss], label="Consumption")
