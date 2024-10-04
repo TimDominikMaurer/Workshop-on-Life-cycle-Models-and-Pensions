@@ -106,7 +106,7 @@ function objective(K_guess, para)
     loss = abs(K_guess - K_implied)
     return loss
 end
-K_guess = K_implied
+
 ###########
 # Part C: Solve for the steady state
 
