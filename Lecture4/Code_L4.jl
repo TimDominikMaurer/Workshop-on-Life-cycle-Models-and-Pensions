@@ -126,7 +126,7 @@ while stepsize > tol
             rvec[(T_shock-age+1):(T_shock+T-age)],
             wvec[(T_shock-age+1):(T_shock+T-age)],
             bvec[(T_shock-age+1):(T_shock+T-age)],
-            τ0,
+            τ1,
             para
         )
     end
